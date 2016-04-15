@@ -1,23 +1,27 @@
 require 'nokogiri'
-require_relative 'dependency'
-require_relative 'hash_finder'
+require 'mvn2buck/dependency'
+require 'mvn2buck/hash_finder'
+require 'mvn2buck/buck_builder'
 
 class Mvn2Buck
 
   def self.main
-    `mvn help:effective-pom -Doutput=/tmp/effective.xml`
+    #`mvn help:effective-pom -Doutput=/tmp/effective.xml`
     pom = File.open('/tmp/effective.xml') { |f| Nokogiri::XML(f) }
-    dependencies = pom.xpath('/xmlns:project/xmlns:dependencies/xmlns:dependency')
-    depData = {'compile' => [], 'test' => [], 'provided' => []}
+    pom.remove_namespaces!
+    dependencies = pom.xpath('//project/dependencies/dependency')
+    externalDeps = {}
+    internalDeps = {}
     dependencies.each do |dep|
-      groupId = dep.xpath('./xmlns:groupId').text
-      artifactId = dep.xpath('./xmlns:artifactId').text
-      version = dep.xpath('./xmlns:version').text
-      scope = dep.xpath('./xmlns:scope').text
+      groupId = dep.xpath('./groupId').text
+      artifactId = dep.xpath('./artifactId').text
+      version = dep.xpath('./version').text
+      scope = dep.xpath('./scope').text
       dependency = Dependency.new(groupId, artifactId, version)
       dependency.resolve_sha1
-      depData[scope] <<  dependency
+      externalDeps[dependency.hash] = dependency unless dependency.hash.nil?
     end
-    depData
+    BuckBuilder.build_lib_file externalDeps
+    externalDeps
   end
 end

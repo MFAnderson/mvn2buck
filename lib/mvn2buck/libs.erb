@@ -1,0 +1,15 @@
+<% for dependency in dependencies %>
+prebuild_jar(
+  name = '<%= dependency.artifact_id %>',
+  binary_jar = ':<%= dependency.artifact_id %>-jar',
+  visibility = ['PUBLIC']
+  )
+
+remote_file(
+  name = '<%= dependency.artifact_id %>-jar',
+  url = 'mvn:<%= dependency.artifact_info %>',
+  out = '<%= dependency.jar_name %>',
+  sha1 = '<%= dependency.hash %>'
+  )
+<% end %>
+

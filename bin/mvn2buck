@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'mvn2buck'
+
+Mvn2Buck.main

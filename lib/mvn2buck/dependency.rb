@@ -11,7 +11,12 @@ class Dependency
   def to_s
     @gav
   end
-
+  def artifact_info
+    "#{group_id}:#{artifact_id}:jar:#{version}"
+  end
+  def jar_name
+    "#{artifact_id}-#{version}.jar"
+  end
   def resolve_sha1
     @hash = HashFinder.get_sha1(self)
   end
